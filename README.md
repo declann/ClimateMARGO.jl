@@ -1,3 +1,9 @@
+# Fork info
+
+Fork is for an ongoing port/reconciliation (of the phsical model anyways) to a calculang model with development outputs here:
+
+https://calcy-quarty-vizys-online.pages.dev/specs/climate-simple/some-visuals-margo
+
 <!-- Title -->
 <h1 align="center">
   ClimateMARGO.jl
