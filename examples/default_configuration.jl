@@ -42,7 +42,7 @@ name = "default";
 
 initial_year = 2020.0 # [yr]
 final_year = 2200.0 # [yr]
-dt = 5.0 # [yr]
+dt = 1.0 # [yr]
 t_arr = t(initial_year, final_year, dt);
 
 # While the model allows for shifting the "present" year forward or backward in time to simulate past and future policy decision-making processes, we will only consider the simplest case in which we take the perspective of a policy decision maker in the year 2020, which is also the initial year of our simulation.
@@ -140,7 +140,7 @@ print("ECS = ", round(ECS(a, B), digits=4), "ºC") # B=1 gives 3.45
 Phys = Physics(c0, T0, a, B, Cd, κ, r);
 
 # things for rec
-τ = τd(Cd, κ, B).AbstractSparseVector
+τ = τd(Cd, κ, B)
 
 T(m)
 
