@@ -9,6 +9,8 @@
 
 # If you are running this tutorial via Binder, there is no need to install the package; just import it using the command below.
 
+#ENV["JULIA_MARGO_LOAD_PYPLOT"] = "1"
+
 using ClimateMARGO # Julia implementation of the MARGO model
 using PyPlot # A basic plotting package
 
@@ -38,9 +40,9 @@ name = "default";
 # #### 1. Setting up the temporal grid
 # First, we need to set up a time-frame for our experiment. Let's begin our simulation in the year 2020– present day– and consider out to 2200, with a 5-year timestep for computational efficiency.
 
-initial_year = 2020. # [yr]
-final_year = 2200. # [yr]
-dt = 5. # [yr]
+initial_year = 2020.0 # [yr]
+final_year = 2200.0 # [yr]
+dt = 5.0 # [yr]
 t_arr = t(initial_year, final_year, dt);
 
 # While the model allows for shifting the "present" year forward or backward in time to simulate past and future policy decision-making processes, we will only consider the simplest case in which we take the perspective of a policy decision maker in the year 2020, which is also the initial year of our simulation.
@@ -58,28 +60,28 @@ dom = Domain(dt, initial_year, initial_year, final_year);
 
 # The default no-policy scenario is one of rapid, fossil-fueled growth which leads to an accumulation of $c(t) = 1400$ ppm of CO$_{2e}$ in the atmosphere by 2150, when emissions are assumed to finally reach net-zero.
 
-c0 = 460. # [ppm]
+c0 = 460.0 # [ppm]
 r = 0.5; # [1] fraction of emissions remaining after biosphere and ocean uptake (Solomon 2009)
 
 q0 = 7.5
-q0mult = 3.
-t_peak = 2100.
-t_zero = 2150.
-q = ramp_emissions(t_arr, q0, q0mult, t_peak, t_zero);
+q0mult = 1.0
+t_peak = 2100.0
+t_zero = 2150.0
+q = ramp_emissions(t_arr, q0, q0mult, 2300.0, 2300.0);
 
 #
 
-figure(figsize=(9,3.5))
+figure(figsize=(9, 3.5))
 
-subplot(1,2,1)
+subplot(1, 2, 1)
 plot(t_arr, ppm_to_GtCO2(q))
 xlabel("year")
 ylabel(L"baseline emissions $q(t)$ [GtCO2 / year]")
 xlim([2020, 2200])
 grid(true)
 
-subplot(1,2,2)
-q_effective = effective_emissions(r, q, 0., 0.) # No mitigation, no carbon removal
+subplot(1, 2, 2)
+q_effective = effective_emissions(r, q, 0.0, 0.0) # No mitigation, no carbon removal
 c_baseline = c(c0, q_effective, dt)
 plot(t_arr, c_baseline)
 xlabel("year")
@@ -95,20 +97,20 @@ gcf()
 # ```
 # where $a$ is an empirically determined coefficient, $G(t)$ represents the effects of geoengineering, and $F_{\infty} = 8.5$ W/m$^2$ is a scaling factor for the effects of geoengineering by Solar Radiation Modification (SRM).
 
-a = (6.9/2.)/log(2.); # F4xCO2/2 / log(2) [W m^-2]
+a = (6.9 / 2.0) / log(2.0); # F4xCO2/2 / log(2) [W m^-2]
 Finf = 8.5;
 
 #
 
-figure(figsize=(4.5,3.2))
-F0 = 3.0
-F_baseline = F(a, c0, Finf, c_baseline, 0.)
+figure(figsize=(4.5, 3.2))
+F0 = 1.1 # was 3
+F_baseline = F(a, c0, Finf, c_baseline, 0.0)
 plot(t_arr, F_baseline .+ F0)
 xlabel("year")
 ylabel(L"baseline radiative forcing $F(t)$ [W/m$^2$]")
 xlim([2020, 2200])
 grid(true)
-ylim([0,10.]);
+ylim([0, 10.0]);
 gcf()
 
 # Next, we configure MARGO's energy balance model, which is forced by the controlled forcing $F_{M,R,G}$. The two-layer energy balance model can be solved, approximately, as:
@@ -121,7 +123,7 @@ gcf()
 
 # Two-layer EBM parameters
 B = 1.13; # Feedback parameter [J yr^-1 m^-2 K^-1]
-Cd = 106.; # Deep ocean heat capacity [J m^-2 K^-1]
+Cd = 106.0; # Deep ocean heat capacity [J m^-2 K^-1]
 κ = 0.73; # Heat exchange coefficient [J yr^-1 m^2 K^-1]
 
 # Initial condition: present-day temperature, relative to pre-industrial
@@ -131,7 +133,7 @@ print("τD = ", Int64(round(τd(Cd, B, κ))), " years")
 
 # These physical parameters can be used to diagnose the climate sensitivity to a doubling of CO$_{2}$ ($ECS$).
 
-print("ECS = ", round(ECS(a, B),digits=1) ,"ºC")
+print("ECS = ", round(ECS(a, B), digits=4), "ºC") # B=1 gives 3.45
 
 # Combined, these parameters define the physical model, which is instantiated by the calling the `Physics` constructor method:
 
@@ -140,7 +142,7 @@ Phys = Physics(c0, T0, a, B, Cd, κ, r);
 # #### 3. Configuring the simple economic model
 # Economic growth in MARGO (in terms of Gross World Product, GWP) is exogenous $E(t) = E_{0} (1 + \gamma)^{(t-t_{0})}$ and is entirely determined by the growth rate $\gamma$. By default, we set $\gamma = 2\%$.
 
-E0 = 100. # Gross World Product at t0 [10^12$ yr^-1]
+E0 = 100.0 # Gross World Product at t0 [10^12$ yr^-1]
 γ = 0.02 # economic growth rate
 
 E_arr = E(t_arr, E0, γ)
@@ -165,28 +167,28 @@ gcf()
 
 # The calculation of the reference control costs $\mathcal{C}_{M}, \mathcal{C}_{R}, \mathcal{C}_{G}, \mathcal{C}_{A}$ are somewhat more complicated; see our Methods in [the preprint](https://eartharxiv.org/5bgyc/) and `defaults.jl` for details. Here, we simply provide their default numerical values, where the costs of mitigation $\mathcal{C}_{M} = \tilde{\mathcal{C}}_{M} E(t)$ and geoengineering $\mathcal{C}_{G} = \tilde{\mathcal{C}}_{G} E(t)$ grow with the size of the global economy and are thus specified as a fraction of GWP, while adaptaiton and removal costs are in trillions of USD per year.
 
-ti = findall(x->x==2100, t_arr)[1]
+ti = findall(x -> x == 2100, t_arr)[1]
 mitigate_cost_percentGWP = 0.02
-mitigate_cost = mitigate_cost_percentGWP*E_arr[ti]/ppm_to_GtCO2(q[ti]); # [trillion USD / year / GtCO2]
+mitigate_cost = mitigate_cost_percentGWP * E_arr[ti] / ppm_to_GtCO2(q[ti]); # [trillion USD / year / GtCO2]
 
 # Costs of negative emissions technologies [US$/tCO2]
 costs = Dict(
-    "BECCS" => 150.,
-    "DACCS" => 200.,
+    "BECCS" => 150.0,
+    "DACCS" => 200.0,
     "Forests" => 27.5,
-    "Weathering" => 125.,
-    "Biochar" => 70.,
-    "Soils" => 50.
+    "Weathering" => 125.0,
+    "Biochar" => 70.0,
+    "Soils" => 50.0
 )
 
 # Upper-bound potential for sequestration (GtCO2/year)
 potentials = Dict(
-    "BECCS" => 5.,
-    "DACCS" => 5.,
+    "BECCS" => 5.0,
+    "DACCS" => 5.0,
     "Forests" => 3.6,
-    "Weathering" => 4.,
-    "Biochar" => 2.,
-    "Soils" => 5.
+    "Weathering" => 4.0,
+    "Biochar" => 2.0,
+    "Soils" => 5.0
 )
 
 mean_cost = sum(values(potentials) .* values(costs)) / sum(values(potentials)) # [$ tCO2^-1] weighted average
@@ -194,18 +196,18 @@ CDR_potential = sum(values(potentials))
 CDR_potential_fraction = CDR_potential / ppm_to_GtCO2(q0)
 
 # Estimate cost from Fuss 2018 (see synthesis Figure 14 and Table 2)
-remove_cost = (mean_cost * CDR_potential*1.e9) / (CDR_potential_fraction^3) * 1.e-12; # [trillion USD / year]
+remove_cost = (mean_cost * CDR_potential * 1.e9) / (CDR_potential_fraction^3) * 1.e-12; # [trillion USD / year]
 
 adapt_cost = 0.115; # [%GWP / year] directly from de Bruin, Dellink, and Tol (2009)
 
-geoeng_cost = βtilde*(Finf/B)^2; # [% GWP]
+geoeng_cost = βtilde * (Finf / B)^2; # [% GWP]
 
 # Climate damages and control costs are discounted at the relatively low rate of $\rho = 2\%$, such that future damages and costs are reduced by a multiplicative discount factor $(1 - \rho)^{(t-t_{0})}$.
 
 ρ = 0.02;
 
 figure(figsize=(4, 2.5))
-plot(t_arr, discount(t_arr, ρ, present_year)*100)
+plot(t_arr, discount(t_arr, ρ, present_year) * 100)
 xlabel("year")
 ylabel("discount factor (%)")
 xlim([2020, 2200])
@@ -218,7 +220,7 @@ gcf()
 Econ = Economics(
     E0, γ, βtilde, ρ, Finf,
     mitigate_cost, remove_cost, geoeng_cost, adapt_cost,
-    0., 0., 0., 0., # Initial condition on control deployments at t[1]
+    0.0, 0.0, 0.0, 0.0, # Initial condition on control deployments at t[1]
     q
 );
 
@@ -271,21 +273,21 @@ temp_goal = 2.0;
 
 # First, we set a upper bounds on the maximum plausible deployment of each control.
 
-max_deployment = Dict("mitigate"=>1., "remove"=>1., "geoeng"=>1., "adapt"=>0.4);
+max_deployment = Dict("mitigate" => 1.0, "remove" => 1.0, "geoeng" => 1.0, "adapt" => 0.4);
 
 # Second, we set upper limits on how quickly each control can be ramped up or down.
 
 # (Adaptation is treated differently since we it interpret it as buying insurance against future climate damages, although the financing is spread evenly over the entire period.)
 
-max_slope = Dict("mitigate"=>1. /40., "remove"=>1. /40., "geoeng"=>1. /40., "adapt"=> 1. /40.);
+max_slope = Dict("mitigate" => 1.0 / 40.0, "remove" => 1.0 / 40.0, "geoeng" => 1.0 / 40.0, "adapt" => 1.0 / 40.0);
 
 # Third, we impose restrictions on when controls can be first deployed. In particular, since carbon dioxide removal and solar radiation modification do not yet exist at scale, we delay these until 2030 and 2050, respectively, at the earliest.
 
 delay_deployment = Dict(
-    "mitigate"=>0.,
-    "remove"=>0.,
-    "geoeng"=>0.,
-    "adapt"=>0.
+    "mitigate" => 0.0,
+    "remove" => 0.0,
+    "geoeng" => 0.0,
+    "adapt" => 0.0
 );
 
 # #### Running the optimization
@@ -295,8 +297,8 @@ using ClimateMARGO.Optimization
 
 @time msolve = optimize_controls!(
     m,
-    obj_option = "adaptive_temp", temp_goal = temp_goal,
-    max_deployment = max_deployment, max_slope = max_slope, delay_deployment = delay_deployment
+    obj_option="adaptive_temp", temp_goal=temp_goal,
+    max_deployment=max_deployment, max_slope=max_slope, delay_deployment=delay_deployment
 );
 
 # ## Plotting MARGO results
@@ -314,13 +316,13 @@ gcf()
 # For example, in the simulation below we set a more stringent temperature goal of $T^{\star} = 1.5$ and omit solar geoengineering and adaptation completely (by setting their maximum deployment to zero).
 
 temp_goal = 1.5
-max_deployment["geoeng"] = 0.
-max_deployment["adapt"] = 0.
+max_deployment["geoeng"] = 0.0
+max_deployment["adapt"] = 0.0
 
 @time optimize_controls!(
     m,
-    obj_option = "adaptive_temp", temp_goal = temp_goal,
-    max_deployment = max_deployment, max_slope = max_slope, delay_deployment = delay_deployment
+    obj_option="adaptive_temp", temp_goal=temp_goal,
+    max_deployment=max_deployment, max_slope=max_slope, delay_deployment=delay_deployment
 );
 
 plot_state(m, temp_goal=temp_goal)
@@ -342,7 +344,7 @@ new_params = import_parameters(export_path)
 # Let's say we want to see what happens if climate feedbacks $B$ are twice as strong as they are now (which means a lower feedback parameter).
 
 new_params.name = "stronger_feedbacks"
-new_params.physics.B /= 2.;
+new_params.physics.B /= 2.0;
 
 new_m = ClimateModel(new_params, Cont)
 
