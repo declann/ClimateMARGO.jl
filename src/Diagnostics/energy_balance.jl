@@ -1,41 +1,41 @@
 """
     F(a, c0, Finf, c, G; F0=0.)
 """
-function F(a, c0, Finf, c, G; F0=0.)
-    F0 .+ a .* log.( c/c0 ) .- G*Finf
+function F(a, c0, Finf, c, G; F0=0.0)
+    F0 .+ a .* log.(c / c0) .- G * Finf
 end
 
 """
     F(m::ClimateModel; M=false, R=false, G=false)
 """
-function F(m; M=false, R=false, G=false, F0=0.)
+function F(m; M=false, R=false, G=false, F0=0.0)
     return F(
         m.physics.a, m.physics.c0, m.economics.Finf,
         c(m, M=M, R=R),
-        m.controls.geoeng .* (1. .- .~past_mask(m) * ~G),
+        m.controls.geoeng .* (1.0 .- .~past_mask(m) * ~G),
         F0=F0
     )
 end
 
-F2x(a::Float64) = a*log(2)
+F2x(a::Float64) = a * log(2)
 F2x(m::ClimateModel) = F2x(m.physics.a)
 
-ECS(a, B) = F2x(a)/B
+ECS(a, B) = F2x(a) / B
 ECS(params::ClimateModelParameters) = ECS(params.physics.a, m.physics.B)
 ECS(m::ClimateModel) = ECS(m.physics.a, m.physics.B)
 
-calc_B(a::Float64, ECS::Float64) = F2x(a)/ECS
+calc_B(a::Float64, ECS::Float64) = F2x(a) / ECS
 calc_B(params::ClimateModelParameters; ECS=ECS(params)) = calc_B(params.physics.a, ECS)
 calc_B(m::ClimateModel; ECS=ECS(m)) = calc_B(m.physics.a, ECS)
 
-τd(Cd, B, κ) = (Cd/B) * (B+κ)/κ
+τd(Cd, B, κ) = (Cd / B) * (B + κ) / κ
 τd(phys::Physics) = τd(phys.Cd, phys.B, phys.κ)
 τd(m::ClimateModel) = τd(m.physics)
 
 """
     T_fast(F, κ, B)
 """
-T_fast(F, κ, B) = F/(κ + B)
+T_fast(F, κ, B) = F / (κ + B)
 
 """
     T_fast(m::ClimateModel; M=false, R=false, G=false)
@@ -52,11 +52,13 @@ T_fast(m::ClimateModel; M=false, R=false, G=false) = T_fast(
 function T_slow(F, Cd, κ, B, t, dt)
     τ = τd(Cd, κ, B)
     return (
-        (κ/B) / (κ + B) *
-        exp.( - (t .- (t[1] - dt)) / τ) .*
-        cumsum( (exp.( (t .- (t[1] - dt)) / τ) / τ) .* F * dt)
+        (κ / B) / (κ + B) *
+        exp.(-(t .- (t[1] - dt)) / τ) .*
+        cumsum((exp.((t .- (t[1] - dt)) / τ) / τ) .* F * dt)
     )
 end
+
+# cumsum( (exp.( (t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt)   = area
 
 """
     T_slow(m::ClimateModel; M=false, R=false, G=false)

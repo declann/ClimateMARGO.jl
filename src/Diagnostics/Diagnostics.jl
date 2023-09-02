@@ -6,7 +6,7 @@ using ClimateMARGO.Utils
 export
     t, past_mask,
     ramp_emissions, emissions, effective_emissions,
-    c, F, Tslow, Tfast, T, T_adapt,
+    c, F, Tslow, Tfast, T, T_adapt, # Tfast, Tslow supposed to have _? but Diagnostics.T_fast(m) works
     τd, B, F2x, ECS,
     discount, f, E,
     damage, cost, benefit,

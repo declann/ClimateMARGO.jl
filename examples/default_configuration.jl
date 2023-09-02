@@ -139,6 +139,19 @@ print("ECS = ", round(ECS(a, B), digits=4), "ºC") # B=1 gives 3.45
 
 Phys = Physics(c0, T0, a, B, Cd, κ, r);
 
+# things for rec
+τ = τd(Cd, κ, B).AbstractSparseVector
+
+T(m)
+
+Diagnostics.T_slow(m)
+
+cumsum((exp.((t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt).AbstractSparseVector
+Diagnostics.T_fast(m)
+
+################ END
+
+
 # #### 3. Configuring the simple economic model
 # Economic growth in MARGO (in terms of Gross World Product, GWP) is exogenous $E(t) = E_{0} (1 + \gamma)^{(t-t_{0})}$ and is entirely determined by the growth rate $\gamma$. By default, we set $\gamma = 2\%$.
 
@@ -250,6 +263,8 @@ m = ClimateModel(
     params,
     Cont
 );
+
+T(m) # T to rec to
 
 # ## Model optimization
 
