@@ -139,17 +139,6 @@ print("ECS = ", round(ECS(a, B), digits=4), "ºC") # B=1 gives 3.45
 
 Phys = Physics(c0, T0, a, B, Cd, κ, r);
 
-# things for rec
-τ = τd(Cd, κ, B)
-
-T(m)
-
-Diagnostics.T_slow(m)
-
-cumsum((exp.((t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt).AbstractSparseVector
-Diagnostics.T_fast(m)
-
-################ END
 
 
 # #### 3. Configuring the simple economic model
@@ -366,3 +355,17 @@ new_m = ClimateModel(new_params, Cont)
 # The new equilibrium climate sensitivity (recall $ECS = F_{2x}/B$) is now:
 
 print("ECS ≈ $(round(ECS(new_m), digits=1))°C")
+
+
+
+# things for rec
+τ = τd(Cd, κ, B)
+
+T(m)
+
+Diagnostics.T_slow(m)
+
+cumsum((exp.((t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt).AbstractSparseVector
+Diagnostics.T_fast(m)
+
+################ END
