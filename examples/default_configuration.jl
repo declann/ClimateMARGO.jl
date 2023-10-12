@@ -341,6 +341,20 @@ export_path = tempname() * ".json"
 
 export_parameters(export_path, params);
 
+
+
+# things for rec
+τ = τd(Cd, κ, B)
+
+T(m)
+
+Diagnostics.T_slow(m)
+
+cumsum((exp.((t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt).AbstractSparseVector
+Diagnostics.T_fast(m)
+
+################ END
+
 # 
 
 new_params = import_parameters(export_path)
@@ -356,16 +370,3 @@ new_m = ClimateModel(new_params, Cont)
 
 print("ECS ≈ $(round(ECS(new_m), digits=1))°C")
 
-
-
-# things for rec
-τ = τd(Cd, κ, B)
-
-T(m)
-
-Diagnostics.T_slow(m)
-
-cumsum((exp.((t(m) .- (t(m)[1] - dt)) / τ) / τ) .* F_baseline * dt).AbstractSparseVector
-Diagnostics.T_fast(m)
-
-################ END
