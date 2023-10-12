@@ -103,7 +103,7 @@ Finf = 8.5;
 #
 
 figure(figsize=(4.5, 3.2))
-F0 = 1.1 # was 3
+F0 = 3# 1.1 # was 3
 F_baseline = F(a, c0, Finf, c_baseline, 0.0)
 plot(t_arr, F_baseline .+ F0)
 xlabel("year")
