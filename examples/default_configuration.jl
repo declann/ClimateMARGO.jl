@@ -171,7 +171,7 @@ gcf()
 
 ti = findall(x -> x == 2100, t_arr)[1]
 mitigate_cost_percentGWP = 0.02
-mitigate_cost = mitigate_cost_percentGWP * E_arr[ti] / ppm_to_GtCO2(q[ti]); # [trillion USD / year / GtCO2]
+mitigate_cost = mitigate_cost_percentGWP * E_arr[ti] / ppm_to_GtCO2(q[ti]); # [trillion USD / year / GtCO2] # this is marginal cost 166 in paper?
 
 # Costs of negative emissions technologies [US$/tCO2]
 costs = Dict(
@@ -240,7 +240,7 @@ params = ClimateModelParameters(
 # Along with economic and physical model components, the timeseries for each of the four controls must be specified. By default, we simply set these to zero.
 
 Cont = Controls(
-    zeros(size(t_arr)), # mitigate
+    zeros(size(t_arr)) .+ 0.02, # mitigate
     zeros(size(t_arr)), # remove
     zeros(size(t_arr)), # geoeng
     zeros(size(t_arr))  # adapt
@@ -253,8 +253,11 @@ m = ClimateModel(
     Cont
 );
 
-T(m) # T to rec to
+T(m; M=true) # T to rec to
 
+T(m) - T(m; M=true) # temp impact of mitigation
+
+cost(m;M=true)
 # ## Model optimization
 
 # #### Formulating the optimization problem
